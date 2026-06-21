@@ -1,5 +1,6 @@
 package com.innowise.gateway.config;
 
+import com.innowise.gateway.filter.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
