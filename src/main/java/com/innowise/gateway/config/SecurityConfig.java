@@ -1,7 +1,6 @@
 package com.innowise.gateway.config;
 
 import com.innowise.gateway.filter.JwtAuthFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -12,9 +11,13 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 
 @Configuration
 @EnableWebFluxSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
+
     private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
@@ -22,11 +25,14 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/auth/login", "/auth/register").permitAll()
+                        .pathMatchers("/actuator/**").permitAll()
+                        .pathMatchers("/auth/login", "/auth/register", "/auth/refresh").permitAll()
+                        .pathMatchers("/payments/debug", "/debug").permitAll()
+                        .pathMatchers("/orders/**").permitAll()
                         .anyExchange().authenticated()
                 )
-                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
